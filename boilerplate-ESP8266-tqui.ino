@@ -5,12 +5,11 @@
 
 // Pin definition
 #define lm35Pin A0
-#define appliancePin 2
-#define readPin 0
+#define appliancePin 15
 
 // Replace with your network credentials
-const char* ssid = "home";//"<Your WiFI SSID>";
-const char* password = "Pqwe^&8rtYu54B7*@@#";//"<Your WiFI Password>";
+const char *ssid = "<Your WiFI SSID>";
+const char *password = "<Your WiFI Password>";
 
 // Millis Timer
 unsigned long previousMillis = 0;
@@ -28,10 +27,12 @@ String appStatus = "OFF";
 //instantiate server at port 80 (http port)
 ESP8266WebServer server(80);
 
-void setup() {
+void setup()
+{
   // Pin Initialization
   pinMode(appliancePin, OUTPUT);
-  pinMode(readPin, INPUT);
+
+//  digitalWrite(appliancePin, LOW);
 
   Serial.begin(9600);
   delay(1);
@@ -39,7 +40,8 @@ void setup() {
 
   // Wait for connection
   Serial.println("");
-  while (WiFi.status() != WL_CONNECTED) {
+  while (WiFi.status() != WL_CONNECTED)
+  {
     delay(500);
     Serial.print(".");
   }
@@ -56,16 +58,14 @@ void setup() {
   });
 
   server.on("/", []() {
-
     page = "<h1>ESP8266 Web UI + AJAX Boilerplate</h1>\n";
     page += "<h2>Analog Check</h2>\n";
     page += "<h3 style=\"display:inline-block; margin-right:5px;\">Temperature:</h3>\n";
     page += "<h3 style=\"display:inline-block;\" id=\"analog-data\">""</h3>\r\n";
-    page += "<a href=\"toggleLink\">Toggle Appliance</a>\n";
     page += "<h2>Digital Check</h2>\n";
     page += "<h3 style=\"display:inline-block; margin-right:5px;\">Appliance:</h3>\n";
     page += "<h3 style=\"display:inline-block;\" id=\"digital-data\">""</h3>\r\n";
-
+    page += "<a href=\"toggleLink\">Toggle</a>\n";
     page += "<script>\r\n";
     page += "var x = setInterval(function() {loadData(\"data.txt\",updateData)}, 1000);\r\n";
 
@@ -97,19 +97,30 @@ void setup() {
   Serial.println("Web server started!");
 }
 
-void loop() {
+void loop()
+{
   unsigned long currentMillis = millis();
-  if (currentMillis - previousMillis >= interval) {
+  if (currentMillis - previousMillis >= interval)
+  {
     previousMillis = currentMillis;
 
     int analogValue = analogRead(lm35Pin);
-    cel = getCelsius(analogValue);
-
     int digitalValue = digitalRead(appliancePin);
 
-    if (digitalValue == HIGH) {
+    if (digitalValue == HIGH){
+      analogValue -= 45; 
+    }
+
+    Serial.println(analogValue);
+    
+    cel = getCelsius(analogValue, digitalValue);
+
+    if (digitalValue == HIGH)
+    {
       appStatus = "ON";
-    } else {
+    }
+    else
+    {
       appStatus = "OFF";
     }
 
